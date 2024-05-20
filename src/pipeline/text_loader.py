@@ -1,6 +1,8 @@
 import multiprocessing
 from typing import Union, List, Literal
 import glob
+
+from langchain_core.documents import Document
 from tqdm import tqdm
 from langchain_community.document_loaders import PyPDFLoader as pypdf
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -48,7 +50,7 @@ class PDFLoader(BaseLoader):
     def __init__(self):
         super().__init__()
 
-    def __call__(self, files: List[str], **kwargs) -> List:
+    def __call__(self, files: List[str], **kwargs) -> List[Document]:
         num_processing = min(self.num_process, kwargs['workers'])
         with multiprocessing.Pool(num_processing) as pool:
             docs = []
@@ -91,8 +93,13 @@ class TextSplitter:
 
 
 class Loader:
+    """
+    Loader class to load pdf files and split into chunks. Based on PDFLoader and TextSplitter that are implemented
+    """
     def __init__(self, file_type: str = Literal["pdf"],
-                 split_kwargs: dict = {"chunk_size": 300, "chunk_overlap": 0}):
+                 split_kwargs=None):
+        if split_kwargs is None:
+            split_kwargs = {"chunk_size": 300, "chunk_overlap": 0}
         assert file_type in ["pdf"], "wrong file type, only support pdf file type"
         self.file_type = file_type
         if file_type == "pdf":
@@ -102,14 +109,14 @@ class Loader:
 
         self.doc_splitter = TextSplitter(**split_kwargs)
 
-    def load(self, pdf_files: Union[str, List[str]], workers: int = 1):
+    def load(self, pdf_files: Union[str, List[str]], workers= 4):
         if isinstance(pdf_files, str):
             pdf_files = [pdf_files]
         doc_loaded = self.doc_loader(pdf_files, workers=workers)
         doc_split = self.doc_splitter(doc_loaded)
         return doc_split
 
-    def load_dir(self, dir_path: str, workers: int = 1):
+    def load_dir(self, dir_path: str, workers= 4):
         if self.file_type == "pdf":
             files = glob.glob(f"{dir_path}/*.pdf")
             assert len(files) > 0, f"No {self.file_type} files found in {dir_path}"

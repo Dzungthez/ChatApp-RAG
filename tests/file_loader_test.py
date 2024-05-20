@@ -1,5 +1,13 @@
 import unittest
 from src.pipeline.text_loader import load_pdf
+from src.pipeline.text_loader import Loader
+
+
+def test_class_Loader():
+    loader = Loader()
+    docs = loader.load_dir('tests')
+    assert len(docs) > 0
+    print(docs)
 
 
 class MyTestCase(unittest.TestCase):
@@ -11,4 +19,5 @@ class MyTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    # unittest.main()
+    test_class_Loader ()
