@@ -4,9 +4,10 @@ from langchain_core.prompts import PromptTemplate
 
 from src.model import load_model
 
-# LLM
+
 llm_model = load_model.get_model(temperature=0.0)
 
+# prompt templates for llm_model to grade retriever's results
 prompt_retriever = PromptTemplate(
     template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are a grader assessing relevance 
     of a retrieved document to a user question. If the document contains keywords related to the user question, 
@@ -20,6 +21,7 @@ prompt_retriever = PromptTemplate(
     input_variables=["question", "document"],
 )
 
+# prompt templates for llm_model to evaluate whether an answer is grounded in facts / retrieved documents
 prompt_hallucination = PromptTemplate(
     template=""" <|begin_of_text|><|start_header_id|>system<|end_header_id|> You are a grader assessing whether 
         an answer is grounded in / supported by a set of facts. Give a binary 'yes' or 'no' score to indicate 
@@ -33,6 +35,7 @@ prompt_hallucination = PromptTemplate(
     input_variables=["generation", "documents"],
 )
 
+# prompt templates for llm_model to grade an answer whether it is useful to resolve a question
 prompt_answer = PromptTemplate(
     template="""<|begin_of_text|><|start_header_id|>system<|end_header_id|> You are a grader assessing whether an 
     answer is useful to resolve a question. Give a binary score 'yes' or 'no' to indicate whether the answer is 
