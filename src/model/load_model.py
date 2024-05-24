@@ -8,7 +8,7 @@ api_key = os.getenv('API_KEY')
 model_name = "llama3-70b-8192"
 
 
-def get_model():
+def get_model(temperature=0.8):
     llm_model = ChatGroq(groq_api_key=api_key, model_name=model_name,
-                         temperature = 0.8)
+                         temperature=temperature)
     return llm_model

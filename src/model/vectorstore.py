@@ -5,7 +5,7 @@ from langchain_chroma import Chroma
 
 
 class MyDatabase:
-    def __init__(self, documents=None, vectorstore: Union[FAISS, Chroma] = None,
+    def __init__(self, documents=None, vectorstore: Union[FAISS, Chroma] = Chroma,
                  embeddings=HuggingFaceEmbeddings()):
         self.documents = documents
         self.vectorstore = vectorstore

@@ -10,7 +10,7 @@ class TestChatGroqModel(unittest.TestCase):
     def test_basic_response(self):
         question = "What is the capital of Vietnam?"
         response = self.model.invoke(question)
-
+        print(type(response))
         expected_output = ["Hanoi", "Ha Noi"]
         self.assertTrue(any(city in response.content for city in expected_output))
 
