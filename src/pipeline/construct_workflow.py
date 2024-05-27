@@ -1,6 +1,6 @@
 from langgraph.graph import END, StateGraph
 from typing_extensions import TypedDict
-from typing import List, Union
+from typing import List
 from langchain_core.documents import Document
 
 
@@ -12,26 +12,24 @@ class State(TypedDict):
 
 
 class WorkFlow:
-    def __init__(self, retriever, llm_model, web_search_tool,
+    def __init__(self, retriever, generate_model, web_search_tool,
                  retrieval_grader, hallucination_grader,
-                 answer_grader, question_router):
+                 answer_grader):
 
         # Assert if any of the input is none
         assert retriever is not None, "Retriever cannot be None"
-        assert llm_model is not None, "LLM model cannot be None"
+        assert generate_model is not None, "Generating model cannot be None"
         assert web_search_tool is not None, "Web search tool cannot be None"
         assert retrieval_grader is not None, "Retrieval grader cannot be None"
         assert hallucination_grader is not None, "Hallucination grader cannot be None"
         assert answer_grader is not None, "Answer grader cannot be None"
-        assert question_router is not None, "Question router cannot be None"
 
         self.retriever = retriever
-        self.llm_model = llm_model
+        self.generate_model = generate_model
         self.web_search_tool = web_search_tool
         self.retrieval_grader = retrieval_grader
         self.hallucination_grader = hallucination_grader
         self.answer_grader = answer_grader
-        self.question_router = question_router
 
         # Define the workflow
         self.workflow = StateGraph(State)
@@ -42,14 +40,7 @@ class WorkFlow:
         self.workflow.add_node("grade_documents", self.grade_documents)
         self.workflow.add_node("generate", self.generate)
 
-        self.workflow.set_conditional_entry_point(
-            self.route_question,
-            {
-                "websearch": "websearch",
-                "vectorstore": "retrieve",
-            },
-        )
-
+        self.workflow.set_entry_point('retrieve')
         self.workflow.add_edge("retrieve", "grade_documents")
         self.workflow.add_conditional_edges(
             "grade_documents",
@@ -62,13 +53,15 @@ class WorkFlow:
         self.workflow.add_edge("websearch", "generate")
         self.workflow.add_conditional_edges(
             "generate",
-            self.grade_generation_v_documents_and_question,
+            self.grade_hallucination,
             {
                 "not supported": "generate",
                 "useful": END,
                 "not useful": "websearch",
             },
         )
+
+        self.app = self.workflow.compile()
 
     def retrieve(self, state: State):
         question_ = state["question"]
@@ -80,9 +73,8 @@ class WorkFlow:
         question_ = state["question"]
         documents = state["documents"]
 
-        generation = self.llm_model.invoke({"context": documents, "question": question_})
-        state["generation"] = generation
-        return state
+        generation = self.generate_model.invoke({"context": documents, "question": question_})
+        return {"documents": documents, "question": question_, "generation": generation}
 
     def grade_documents(self, state: State):
         question_ = state["question"]
@@ -112,15 +104,7 @@ class WorkFlow:
         state["documents"] = documents
         return state
 
-    def route_question(self, state: State):
-        question_ = state["question"]
-        source = self.question_router.invoke({"question": question_})
-        if source["datasource"] == "web_search":
-            return "websearch"
-        elif source["datasource"] == "vectorstore":
-            return "retrieve"
-
-    def grade_generation_v_documents_and_question(self, state: State):
+    def grade_hallucination(self, state: State):
         question_ = state["question"]
         documents = state["documents"]
         generation = state["generation"]
@@ -145,14 +129,5 @@ class WorkFlow:
         else:
             return "generate"
 
-    def run(self, question_: str) -> str:
-        initial_state = {
-            "question": question_,
-            "generation": "",
-            "web_search": "",
-            "documents": [],
-        }
-
-        result_state = self.workflow.run(initial_state)
-        final_answer = result_state.get("generation", "No answer generated")
-        return final_answer
+    def invoke(self, question: str):
+        return self.app.invoke({"question" : question})

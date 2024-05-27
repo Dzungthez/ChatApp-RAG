@@ -20,3 +20,9 @@ uvicorn==0.29.0
 python-dotenv~=1.0.1
 streamlit~=1.34.0
 langchain-groq
+pydantic~=2.7.1
+tqdm~=4.66.4
+langgraph~=0.0.55
+typing_extensions~=4.11.0
+gpt4all==2.6.0
+pdfplumber~=0.11.0

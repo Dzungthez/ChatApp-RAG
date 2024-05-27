@@ -1,6 +1,6 @@
 import unittest
 
-from src.pipeline.grader import get_hallucination_grader, get_retrieval_grader, get_answer_grader
+from src.model.grader import get_hallucination_grader, get_retrieval_grader, get_answer_grader
 
 
 class MyTestCase(unittest.TestCase):
