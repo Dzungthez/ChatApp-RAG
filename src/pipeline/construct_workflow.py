@@ -12,11 +12,12 @@ class State(TypedDict):
 
 
 class WorkFlow:
-    def __init__(self, retriever, generate_model, web_search_tool,
+    def __init__(self, database, retriever, generate_model, web_search_tool,
                  retrieval_grader, hallucination_grader,
                  answer_grader):
 
         # Assert if any of the input is none
+        assert database is not None, "Database cannot be None"
         assert retriever is not None, "Retriever cannot be None"
         assert generate_model is not None, "Generating model cannot be None"
         assert web_search_tool is not None, "Web search tool cannot be None"
@@ -24,6 +25,7 @@ class WorkFlow:
         assert hallucination_grader is not None, "Hallucination grader cannot be None"
         assert answer_grader is not None, "Answer grader cannot be None"
 
+        self.database = database
         self.retriever = retriever
         self.generate_model = generate_model
         self.web_search_tool = web_search_tool
@@ -129,5 +131,14 @@ class WorkFlow:
         else:
             return "generate"
 
+    def add_documents(self, documents: List[Document]) -> None:
+        """
+        Add new documents to database
+        :param documents: List of documents to add
+        :return: None
+        """
+        self.database.add_documents(documents)
+        self.retriever = self.database.get_retriever()
+
     def invoke(self, question: str):
-        return self.app.invoke({"question" : question})
+        return self.app.invoke({"question": question})

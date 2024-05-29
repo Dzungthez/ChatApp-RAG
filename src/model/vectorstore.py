@@ -14,7 +14,7 @@ class MyDatabase:
         self.embeddings = embeddings
         self.database = self.build_db(documents)
 
-    def add_documents(self, documents: List[str]) -> None:
+    def add_documents(self, documents: List[Document]) -> None:
         """
         Add new documents to database
         :param documents: List of documents to add
@@ -34,5 +34,5 @@ class MyDatabase:
 
     def get_retriever(self, kwargs=None):
         if kwargs is None:
-            kwargs = {'k': 10}
+            kwargs = {'k': 8}
         return self.database.as_retriever(search_type="similarity",**kwargs)

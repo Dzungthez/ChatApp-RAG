@@ -14,7 +14,8 @@ init_filepath = os.getenv('INIT_FILEPATH')
 
 def call_workflow():
     docs = Loader().load(init_filepath)
-    retriever = MyDatabase(documents=docs).get_retriever()
+    database = MyDatabase(documents=docs)
+    retriever = database.get_retriever()
     generate_model = get_generate_model()
     web_search_tool = get_websearch_tool()
     retrieval_grader = get_retrieval_grader()
@@ -22,6 +23,7 @@ def call_workflow():
     answer_grader = get_answer_grader()
 
     workflow = WorkFlow(
+        database=database,
         retriever=retriever,
         generate_model=generate_model,
         web_search_tool=web_search_tool,

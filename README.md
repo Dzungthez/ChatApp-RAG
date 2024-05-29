@@ -12,7 +12,7 @@ The overall architecture of the project is as follows:
 
 ## How to run
 1. Clone the repository
-2. Install the required packages. Please remember to change the python interpreter to the venv.
+2. Install the required packages. Change the python interpreter to the venv and upload a sample pdf file to the data folder. Then, copy the file path and replace it with the variable "init_filepath" in main.py. That will be the base file for the model.
 ```bash
    pip install -r requirements.txt
    ```

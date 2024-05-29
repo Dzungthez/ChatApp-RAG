@@ -11,13 +11,13 @@ def save_uploaded_file(uploaded_file):
         f.write(uploaded_file.getbuffer())
 
 
-async def async_invoke(workflow, question):
+async def async_invoke(question):
     loop = asyncio.get_running_loop()
     response = await loop.run_in_executor(None, workflow.invoke, question)
     return response
 
 
-async def running(workflow):
+async def running():
     st.title("AI Question Answering System")
 
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
@@ -26,6 +26,7 @@ async def running(workflow):
         st.success(f"Uploaded file: {uploaded_file.name}")
 
         docs = Loader().load(os.path.join("data", uploaded_file.name))
+        workflow.add_documents(docs)
         st.session_state.documents = docs
 
     # Initialize session state for messages if not already done
@@ -43,7 +44,7 @@ async def running(workflow):
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        response = await async_invoke(workflow, prompt)
+        response = await async_invoke(prompt)
         answer = response['generation']
 
         st.session_state.messages.append({"role": "assistant", "content": answer})
@@ -54,4 +55,4 @@ async def running(workflow):
 if __name__ == "__main__":
     freeze_support()
     workflow = main.call_workflow()
-    asyncio.run(running(workflow))
+    asyncio.run(running())
