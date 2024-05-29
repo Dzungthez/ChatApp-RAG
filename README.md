@@ -20,7 +20,7 @@ The overall architecture of the project is as follows:
 ```bash
    python -m streamlit run src\app.py
    ```
-4. Wait for the app to open in your browser. Uploading your pdf files and start asking questions.
+4. Wait for the app to open in your browser. Uploading your pdf files if neccessary and start asking questions.
 
 
 ## Demo
